@@ -1,0 +1,222 @@
+// WildCard Data Service - Modular source architecture
+// Each source is a separate module - easy to add/remove
+
+export const SOURCES = {
+  POKER_ATLAS: 'PokerAtlas',
+  HENDON_MOB: 'Hendon Mob',
+  CARD_PLAYER: 'Card Player',
+};
+
+// Frontier served cities from ORD/MDW
+export const FRONTIER_CITIES = [
+  { code: 'LAS', name: 'Las Vegas', state: 'NV', airport: 'Harry Reid Intl' },
+  { code: 'MCO', name: 'Orlando', state: 'FL', airport: 'Orlando Intl' },
+  { code: 'MIA', name: 'Miami', state: 'FL', airport: 'Miami Intl' },
+  { code: 'TPA', name: 'Tampa', state: 'FL', airport: 'Tampa Intl' },
+  { code: 'FLL', name: 'Fort Lauderdale', state: 'FL', airport: 'Fort Lauderdale Intl' },
+  { code: 'ATL', name: 'Atlanta', state: 'GA', airport: 'Hartsfield-Jackson' },
+  { code: 'DEN', name: 'Denver', state: 'CO', airport: 'Denver Intl' },
+  { code: 'PHX', name: 'Phoenix', state: 'AZ', airport: 'Sky Harbor' },
+  { code: 'LAX', name: 'Los Angeles', state: 'CA', airport: 'Los Angeles Intl' },
+  { code: 'SFO', name: 'San Francisco', state: 'CA', airport: 'San Francisco Intl' },
+  { code: 'SEA', name: 'Seattle', state: 'WA', airport: 'Seattle-Tacoma Intl' },
+  { code: 'BOS', name: 'Boston', state: 'MA', airport: 'Logan Intl' },
+  { code: 'EWR', name: 'New York', state: 'NY', airport: 'Newark Liberty' },
+  { code: 'MSP', name: 'Minneapolis', state: 'MN', airport: 'Minneapolis-St. Paul' },
+  { code: 'DTW', name: 'Detroit', state: 'MI', airport: 'Detroit Metro' },
+  { code: 'CLT', name: 'Charlotte', state: 'NC', airport: 'Douglas Intl' },
+  { code: 'SAN', name: 'San Diego', state: 'CA', airport: 'San Diego Intl' },
+  { code: 'AUS', name: 'Austin', state: 'TX', airport: 'Austin-Bergstrom' },
+  { code: 'HOU', name: 'Houston', state: 'TX', airport: 'Houston Hobby' },
+  { code: 'MSY', name: 'New Orleans', state: 'LA', airport: 'Louis Armstrong' },
+  { code: 'BNA', name: 'Nashville', state: 'TN', airport: 'Nashville Intl' },
+  { code: 'RDU', name: 'Raleigh', state: 'NC', airport: 'Raleigh-Durham Intl' },
+  { code: 'SLC', name: 'Salt Lake City', state: 'UT', airport: 'Salt Lake City Intl' },
+  { code: 'PDX', name: 'Portland', state: 'OR', airport: 'Portland Intl' },
+];
+
+// Sample tournament data - will be replaced by live API calls
+export const SAMPLE_TOURNAMENTS = [
+  {
+    id: 't1',
+    name: 'WSOP Circuit Main Event',
+    casino: 'Horseshoe Las Vegas',
+    city: 'Las Vegas',
+    cityCode: 'LAS',
+    state: 'NV',
+    startDate: '2026-06-15',
+    endDate: '2026-06-18',
+    buyIn: 1700,
+    guarantee: 500000,
+    source: SOURCES.POKER_ATLAS,
+    url: 'https://pokeratlas.com',
+  },
+  {
+    id: 't2',
+    name: 'Summer Poker Festival - Main Event',
+    casino: 'Seminole Hard Rock',
+    city: 'Fort Lauderdale',
+    cityCode: 'FLL',
+    state: 'FL',
+    startDate: '2026-06-20',
+    endDate: '2026-06-23',
+    buyIn: 1100,
+    guarantee: 300000,
+    source: SOURCES.HENDON_MOB,
+    url: 'https://pokerdb.thehendonmob.com',
+  },
+  {
+    id: 't3',
+    name: 'WPT Prime Championship',
+    casino: 'Wynn Las Vegas',
+    city: 'Las Vegas',
+    cityCode: 'LAS',
+    state: 'NV',
+    startDate: '2026-07-04',
+    endDate: '2026-07-07',
+    buyIn: 3500,
+    guarantee: 2000000,
+    source: SOURCES.CARD_PLAYER,
+    url: 'https://cardplayer.com',
+  },
+  {
+    id: 't4',
+    name: 'Deep Stack Extravaganza',
+    casino: 'Venetian Resort',
+    city: 'Las Vegas',
+    cityCode: 'LAS',
+    state: 'NV',
+    startDate: '2026-07-10',
+    endDate: '2026-07-12',
+    buyIn: 600,
+    guarantee: 150000,
+    source: SOURCES.POKER_ATLAS,
+    url: 'https://pokeratlas.com',
+  },
+  {
+    id: 't5',
+    name: 'Florida State Poker Championship',
+    casino: 'Magic City Casino',
+    city: 'Miami',
+    cityCode: 'MIA',
+    state: 'FL',
+    startDate: '2026-06-28',
+    endDate: '2026-06-30',
+    buyIn: 550,
+    guarantee: 100000,
+    source: SOURCES.POKER_ATLAS,
+    url: 'https://pokeratlas.com',
+  },
+  {
+    id: 't6',
+    name: 'Colorado Poker Championship',
+    casino: 'Isle Casino',
+    city: 'Denver',
+    cityCode: 'DEN',
+    state: 'CO',
+    startDate: '2026-07-18',
+    endDate: '2026-07-20',
+    buyIn: 400,
+    guarantee: 75000,
+    source: SOURCES.HENDON_MOB,
+    url: 'https://pokerdb.thehendonmob.com',
+  },
+  {
+    id: 't7',
+    name: 'SHRPO Summer Series',
+    casino: 'Seminole Hard Rock Hollywood',
+    city: 'Fort Lauderdale',
+    cityCode: 'FLL',
+    state: 'FL',
+    startDate: '2026-08-01',
+    endDate: '2026-08-04',
+    buyIn: 2200,
+    guarantee: 1000000,
+    source: SOURCES.CARD_PLAYER,
+    url: 'https://cardplayer.com',
+  },
+  {
+    id: 't8',
+    name: 'Borgata Summer Open',
+    casino: 'Borgata Hotel Casino',
+    city: 'Atlanta',
+    cityCode: 'ATL',
+    state: 'GA',
+    startDate: '2026-08-10',
+    endDate: '2026-08-13',
+    buyIn: 1100,
+    guarantee: 250000,
+    source: SOURCES.POKER_ATLAS,
+    url: 'https://pokeratlas.com',
+  },
+];
+
+// GoWild flight pricing simulation
+// In production this will scrape Frontier's GoWild tab
+export const getGoWildPrice = (cityCode, dates) => {
+  const basePrices = {
+    LAS: { min: 26, max: 89 },
+    MCO: { min: 19, max: 69 },
+    MIA: { min: 26, max: 79 },
+    TPA: { min: 19, max: 59 },
+    FLL: { min: 26, max: 79 },
+    ATL: { min: 26, max: 69 },
+    DEN: { min: 19, max: 59 },
+    PHX: { min: 26, max: 79 },
+    LAX: { min: 39, max: 99 },
+    SFO: { min: 39, max: 109 },
+    SEA: { min: 39, max: 109 },
+    BOS: { min: 39, max: 99 },
+    EWR: { min: 26, max: 89 },
+    MSP: { min: 19, max: 49 },
+    DTW: { min: 19, max: 49 },
+    CLT: { min: 26, max: 69 },
+    SAN: { min: 39, max: 99 },
+    AUS: { min: 26, max: 79 },
+    HOU: { min: 26, max: 69 },
+    MSY: { min: 26, max: 69 },
+    BNA: { min: 19, max: 59 },
+    RDU: { min: 26, max: 69 },
+    SLC: { min: 26, max: 79 },
+    PDX: { min: 39, max: 99 },
+  };
+  const range = basePrices[cityCode] || { min: 39, max: 99 };
+  // Simulate availability - some flights unavailable
+  const available = Math.random() > 0.3;
+  if (!available) return null;
+  const price = Math.floor(Math.random() * (range.max - range.min) + range.min);
+  return price;
+};
+
+// Hotel pricing simulation
+export const getHotelEstimate = (cityCode, nights) => {
+  const nightly = {
+    LAS: { min: 49, max: 189 },
+    MCO: { min: 79, max: 149 },
+    MIA: { min: 99, max: 249 },
+    TPA: { min: 79, max: 149 },
+    FLL: { min: 89, max: 169 },
+    ATL: { min: 89, max: 179 },
+    DEN: { min: 99, max: 189 },
+    PHX: { min: 79, max: 159 },
+    LAX: { min: 129, max: 289 },
+    SFO: { min: 149, max: 329 },
+    SEA: { min: 119, max: 249 },
+    BOS: { min: 129, max: 279 },
+    EWR: { min: 99, max: 229 },
+    MSP: { min: 89, max: 169 },
+    DTW: { min: 79, max: 149 },
+    CLT: { min: 89, max: 169 },
+    SAN: { min: 119, max: 239 },
+    AUS: { min: 99, max: 199 },
+    HOU: { min: 79, max: 159 },
+    MSY: { min: 99, max: 199 },
+    BNA: { min: 99, max: 189 },
+    RDU: { min: 89, max: 169 },
+    SLC: { min: 89, max: 179 },
+    PDX: { min: 99, max: 199 },
+  };
+  const range = nightly[cityCode] || { min: 99, max: 199 };
+  const perNight = Math.floor(Math.random() * (range.max - range.min) + range.min);
+  return perNight * nights;
+};

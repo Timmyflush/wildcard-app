@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --flame-core: #ff4500;
+  --flame-mid: #ff6b1a;
+  --flame-tip: #ffaa00;
+  --flame-glow: rgba(255, 107, 26, 0.4);
+  --flame-subtle: rgba(255, 107, 26, 0.15);
+  --bg-deep: #0a0f14;
+  --bg-mid: #0f1923;
+  --bg-card: rgba(255, 255, 255, 0.06);
+  --bg-card-hover: rgba(255, 255, 255, 0.1);
+  --text-primary: #f0e6d3;
+  --text-secondary: #a89880;
+  --text-bright: #ffffff;
+  --card-face: rgba(240, 230, 211, 0.95);
+  --card-face-text: #1a0f00;
+  --border-flame: rgba(255, 107, 26, 0.5);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --success: #4caf7d;
+  --font-display: 'Cinzel', serif;
+  --font-body: 'Rajdhani', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-flame); border-radius: 2px; }
+
+/* Flame glow animation */
+@keyframes flameGlow {
+  0%, 100% { box-shadow: 0 0 8px var(--flame-glow), 0 0 20px rgba(255, 69, 0, 0.2); }
+  50% { box-shadow: 0 0 15px var(--flame-glow), 0 0 35px rgba(255, 107, 26, 0.3); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.fade-in { animation: fadeInUp 0.4s ease forwards; }
+.fade-in-delay-1 { animation: fadeInUp 0.4s ease 0.1s both; }
+.fade-in-delay-2 { animation: fadeInUp 0.4s ease 0.2s both; }
+.fade-in-delay-3 { animation: fadeInUp 0.4s ease 0.3s both; }
