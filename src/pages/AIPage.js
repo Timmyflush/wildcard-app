@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader, Trash2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import SpadeIcon from '../components/SpadeIcon';
 import { askWildCardAI } from '../services/aiService';
 import { SAMPLE_TOURNAMENTS } from '../services/dataService';
@@ -15,6 +16,40 @@ const WELCOME_MESSAGE = {
   role: 'assistant',
   content: "Welcome to WildCard AI. I know your tournament schedule, GoWild pricing, and hotel estimates. Ask me anything — best trips for your budget, upcoming tournaments by city, or total cost breakdowns. What are you looking for?",
 };
+
+const markdownStyles = {
+  p: { margin: '0 0 8px 0' },
+  h2: { fontSize: '15px', fontWeight: 700, margin: '12px 0 4px', color: 'var(--flame-mid)' },
+  h3: { fontSize: '14px', fontWeight: 700, margin: '10px 0 4px', color: 'var(--flame-mid)' },
+  ul: { margin: '4px 0 8px 0', paddingLeft: '18px' },
+  ol: { margin: '4px 0 8px 0', paddingLeft: '18px' },
+  li: { marginBottom: '4px' },
+  a: { color: 'var(--flame-mid)', textDecoration: 'underline' },
+  strong: { color: 'var(--text-primary)', fontWeight: 700 },
+  hr: { border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)', margin: '10px 0' },
+};
+
+const MarkdownMessage = ({ content }) => (
+  <ReactMarkdown
+    components={{
+      p: ({ children }) => <p style={markdownStyles.p}>{children}</p>,
+      h2: ({ children }) => <h2 style={markdownStyles.h2}>{children}</h2>,
+      h3: ({ children }) => <h3 style={markdownStyles.h3}>{children}</h3>,
+      ul: ({ children }) => <ul style={markdownStyles.ul}>{children}</ul>,
+      ol: ({ children }) => <ol style={markdownStyles.ol}>{children}</ol>,
+      li: ({ children }) => <li style={markdownStyles.li}>{children}</li>,
+      a: ({ href, children }) => (
+        <a href={href} target="_blank" rel="noopener noreferrer" style={markdownStyles.a}>
+          {children}
+        </a>
+      ),
+      strong: ({ children }) => <strong style={markdownStyles.strong}>{children}</strong>,
+      hr: () => <hr style={markdownStyles.hr} />,
+    }}
+  >
+    {content}
+  </ReactMarkdown>
+);
 
 export default function AIPage({ savedTrips }) {
   const [messages, setMessages] = useState(() => {
@@ -112,9 +147,10 @@ export default function AIPage({ savedTrips }) {
               lineHeight: '1.5',
               color: 'var(--text-primary)',
               fontFamily: 'var(--font-body)',
-              whiteSpace: 'pre-wrap',
             }}>
-              {msg.content}
+              {msg.role === 'assistant'
+                ? <MarkdownMessage content={msg.content} />
+                : msg.content}
             </div>
           </div>
         ))}
