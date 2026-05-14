@@ -27,21 +27,6 @@ const extractPrefs = (userMessage) => {
   if (Object.keys(prefs).length) savePrefs(prefs);
 };
 
-const extractToolResultContent = (block) => {
-  // Try to get real search result content from the block
-  if (block.output) return block.output;
-  if (block.content) {
-    if (typeof block.content === 'string') return block.content;
-    if (Array.isArray(block.content)) {
-      return block.content
-        .map(c => c.text || c.content || JSON.stringify(c))
-        .join('\n');
-    }
-  }
-  if (block.result) return typeof block.result === 'string' ? block.result : JSON.stringify(block.result);
-  return JSON.stringify(block);
-};
-
 const callAPI = async (messages, system, apiKey) => {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -101,21 +86,27 @@ Always include a direct link (URL) to the tournament source — casino website, 
     let data = await callAPI(messages, context, apiKey);
     let iterations = 0;
 
-    // Loop until the model stops using tools (max 5 iterations)
     while (data.stop_reason === 'tool_use' && iterations < 5) {
       iterations++;
-      const toolUseBlocks = data.content.filter(b => b.type === 'tool_use');
-      const toolResults = toolUseBlocks.map(block => ({
-        type: 'tool_result',
-        tool_use_id: block.id,
-        content: extractToolResultContent(block),
-      }));
 
-      messages = [
-        ...messages,
-        { role: 'assistant', content: data.content },
-        { role: 'user', content: toolResults },
-      ];
+      // Append assistant turn
+      messages = [...messages, { role: 'assistant', content: data.content }];
+
+      // Check if tool_result blocks are already in the response
+      const toolResultBlocks = data.content.filter(b => b.type === 'tool_result');
+
+      if (toolResultBlocks.length > 0) {
+        messages = [...messages, { role: 'user', content: toolResultBlocks }];
+      } else {
+        // Build stubs for any tool_use blocks so the model can continue
+        const toolUseBlocks = data.content.filter(b => b.type === 'tool_use');
+        const stubs = toolUseBlocks.map(block => ({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: [{ type: 'text', text: 'Search completed.' }],
+        }));
+        messages = [...messages, { role: 'user', content: stubs }];
+      }
 
       data = await callAPI(messages, context, apiKey);
     }
@@ -123,6 +114,7 @@ Always include a direct link (URL) to the tournament source — casino website, 
     const text = data.content?.find(b => b.type === 'text')?.text;
     return text || 'Unable to get a response. Please try again.';
   } catch (err) {
+    console.error('WildCard AI error:', err);
     return 'Connection error. Please check your internet and try again.';
   }
 };
