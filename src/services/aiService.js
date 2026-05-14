@@ -57,10 +57,13 @@ Keep responses concise and actionable. Format numbers as currency. When recommen
 Always include a direct link (URL) to the tournament source — casino website, PokerAtlas listing, or tournament series page — so the user can get full details.`;
 
   const history = chatHistory.slice(-10).map(m => ({ role: m.role, content: m.content }));
+  const messages = history.length > 0 ? history : [{ role: 'user', content: userMessage }];
 
   try {
     extractPrefs(userMessage);
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+
+    // First API call
+    let response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -73,10 +76,49 @@ Always include a direct link (URL) to the tournament source — casino website, 
         max_tokens: 4000,
         system: context,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: history.length > 0 ? history : [{ role: 'user', content: userMessage }],
+        messages,
       }),
     });
-    const data = await response.json();
+
+    let data = await response.json();
+
+    // If the model used a tool, send the results back for a final response
+    if (data.stop_reason === 'tool_use') {
+      const assistantMessage = { role: 'assistant', content: data.content };
+      const toolResults = data.content
+        .filter(block => block.type === 'tool_use')
+        .map(block => ({
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: block.input ? JSON.stringify(block.input) : 'Search completed',
+        }));
+
+      const followUpMessages = [
+        ...messages,
+        assistantMessage,
+        { role: 'user', content: toolResults },
+      ];
+
+      response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.REACT_APP_ANTHROPIC_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-5',
+          max_tokens: 4000,
+          system: context,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: followUpMessages,
+        }),
+      });
+
+      data = await response.json();
+    }
+
     const text = data.content?.find(b => b.type === 'text')?.text;
     return text || 'Unable to get a response. Please try again.';
   } catch (err) {
