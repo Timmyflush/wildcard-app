@@ -27,6 +27,26 @@ const extractPrefs = (userMessage) => {
   if (Object.keys(prefs).length) savePrefs(prefs);
 };
 
+const callAPI = async (messages, system, apiKey) => {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 4000,
+      system,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      messages,
+    }),
+  });
+  return response.json();
+};
+
 export const askWildCardAI = async (userMessage, tournaments, savedTrips, chatHistory = []) => {
   const prefs = getPrefs();
   const prefsText = Object.keys(prefs).length
@@ -56,67 +76,33 @@ You help users:
 Keep responses concise and actionable. Format numbers as currency. When recommending trips, always mention the total estimated cost breakdown.
 Always include a direct link (URL) to the tournament source — casino website, PokerAtlas listing, or tournament series page — so the user can get full details.`;
 
-  const history = chatHistory.slice(-10).map(m => ({ role: m.role, content: m.content }));
-  const messages = history.length > 0 ? history : [{ role: 'user', content: userMessage }];
+  const apiKey = process.env.REACT_APP_ANTHROPIC_KEY;
+  let messages = chatHistory.slice(-10).map(m => ({ role: m.role, content: m.content }));
+  if (messages.length === 0) messages = [{ role: 'user', content: userMessage }];
 
   try {
     extractPrefs(userMessage);
 
-    // First API call
-    let response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.REACT_APP_ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 4000,
-        system: context,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages,
-      }),
-    });
+    let data = await callAPI(messages, context, apiKey);
+    let iterations = 0;
 
-    let data = await response.json();
+    // Loop until the model stops using tools (max 5 iterations)
+    while (data.stop_reason === 'tool_use' && iterations < 5) {
+      iterations++;
+      const toolUseBlocks = data.content.filter(b => b.type === 'tool_use');
+      const toolResults = toolUseBlocks.map(block => ({
+        type: 'tool_result',
+        tool_use_id: block.id,
+        content: 'Search executed successfully.',
+      }));
 
-    // If the model used a tool, send the results back for a final response
-    if (data.stop_reason === 'tool_use') {
-      const assistantMessage = { role: 'assistant', content: data.content };
-      const toolResults = data.content
-        .filter(block => block.type === 'tool_use')
-        .map(block => ({
-          type: 'tool_result',
-          tool_use_id: block.id,
-          content: block.input ? JSON.stringify(block.input) : 'Search completed',
-        }));
-
-      const followUpMessages = [
+      messages = [
         ...messages,
-        assistantMessage,
+        { role: 'assistant', content: data.content },
         { role: 'user', content: toolResults },
       ];
 
-      response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.REACT_APP_ANTHROPIC_KEY,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-5',
-          max_tokens: 4000,
-          system: context,
-          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-          messages: followUpMessages,
-        }),
-      });
-
-      data = await response.json();
+      data = await callAPI(messages, context, apiKey);
     }
 
     const text = data.content?.find(b => b.type === 'text')?.text;
