@@ -53,7 +53,8 @@ You help users:
 - Calculate total trip costs (flight + hotel + buy-in)
 - Compare trip options
 - Plan multi-stop poker trips
-Keep responses concise and actionable. Format numbers as currency. When recommending trips, always mention the total estimated cost breakdown.`;
+Keep responses concise and actionable. Format numbers as currency. When recommending trips, always mention the total estimated cost breakdown.
+Always include a direct link (URL) to the tournament source — casino website, PokerAtlas listing, or tournament series page — so the user can get full details.`;
 
   const history = chatHistory.slice(-10).map(m => ({ role: m.role, content: m.content }));
 
@@ -69,7 +70,7 @@ Keep responses concise and actionable. Format numbers as currency. When recommen
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 2000,
+        max_tokens: 4000,
         system: context,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: history.length > 0 ? history : [{ role: 'user', content: userMessage }],
