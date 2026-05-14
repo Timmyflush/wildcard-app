@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Loader } from 'lucide-react';
+import { Send, Loader, Trash2 } from 'lucide-react';
 import SpadeIcon from '../components/SpadeIcon';
 import { askWildCardAI } from '../services/aiService';
 import { SAMPLE_TOURNAMENTS } from '../services/dataService';
@@ -11,13 +11,20 @@ const QUICK_PROMPTS = [
   "Florida tournaments with cheap flights",
 ];
 
+const WELCOME_MESSAGE = {
+  role: 'assistant',
+  content: "Welcome to WildCard AI. I know your tournament schedule, GoWild pricing, and hotel estimates. Ask me anything — best trips for your budget, upcoming tournaments by city, or total cost breakdowns. What are you looking for?",
+};
+
 export default function AIPage({ savedTrips }) {
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: "Welcome to WildCard AI. I know your tournament schedule, GoWild pricing, and hotel estimates. Ask me anything — best trips for your budget, upcoming tournaments by city, or total cost breakdowns. What are you looking for?",
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem('wildcard_chat_history');
+      return saved ? JSON.parse(saved) : [WELCOME_MESSAGE];
+    } catch {
+      return [WELCOME_MESSAGE];
     }
-  ]);
+  });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
@@ -26,19 +33,54 @@ export default function AIPage({ savedTrips }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('wildcard_chat_history', JSON.stringify(messages));
+    } catch {}
+  }, [messages]);
+
+  const clearHistory = () => {
+    localStorage.removeItem('wildcard_chat_history');
+    localStorage.removeItem('wildcard_user_prefs');
+    setMessages([WELCOME_MESSAGE]);
+  };
+
   const send = async (text) => {
     const msg = text || input.trim();
     if (!msg || loading) return;
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: msg }]);
+    const updatedMessages = [...messages, { role: 'user', content: msg }];
+    setMessages(updatedMessages);
     setLoading(true);
-    const reply = await askWildCardAI(msg, SAMPLE_TOURNAMENTS, savedTrips);
+    const reply = await askWildCardAI(msg, SAMPLE_TOURNAMENTS, savedTrips, updatedMessages);
     setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
     setLoading(false);
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      {/* Header with clear button */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 16px 0', flexShrink: 0 }}>
+        <button
+          onClick={clearHistory}
+          title="Clear chat history"
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '8px',
+            padding: '4px 10px',
+            color: 'var(--text-secondary)',
+            fontSize: '12px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+          }}
+        >
+          <Trash2 size={12} /> Clear
+        </button>
+      </div>
+
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
         {messages.map((msg, i) => (

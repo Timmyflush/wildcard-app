@@ -1,5 +1,38 @@
 // WildCard AI Service - Claude API integration
-export const askWildCardAI = async (userMessage, tournaments, savedTrips) => {
+
+const PREFS_KEY = 'wildcard_user_prefs';
+
+const getPrefs = () => {
+  try {
+    const saved = localStorage.getItem(PREFS_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch { return {}; }
+};
+
+const savePrefs = (newPrefs) => {
+  try {
+    const existing = getPrefs();
+    localStorage.setItem(PREFS_KEY, JSON.stringify({ ...existing, ...newPrefs }));
+  } catch {}
+};
+
+const extractPrefs = async (userMessage) => {
+  const lower = userMessage.toLowerCase();
+  const prefs = {};
+  const budgetMatch = lower.match(/\$?([\d,]+)\s*(total|budget|max|limit)?/);
+  if (budgetMatch) prefs.budget = budgetMatch[0];
+  const cities = ['las vegas', 'miami', 'tampa', 'jacksonville', 'chicago', 'new orleans', 'tunica', 'atlantic city', 'phoenix', 'denver'];
+  const mentioned = cities.filter(c => lower.includes(c));
+  if (mentioned.length) prefs.preferredCities = mentioned;
+  if (Object.keys(prefs).length) savePrefs(prefs);
+};
+
+export const askWildCardAI = async (userMessage, tournaments, savedTrips, chatHistory = []) => {
+  const prefs = getPrefs();
+  const prefsText = Object.keys(prefs).length
+    ? `\nKNOWN USER PREFERENCES (remembered from past sessions):\n${JSON.stringify(prefs, null, 2)}\n`
+    : '';
+
   const context = `You are WildCard, an AI trip planning assistant specializing in poker tournaments and travel using Frontier Airlines GoWild pass flights.
 The user flies from Chicago (ORD or MDW). They have a Frontier GoWild pass which gives deeply discounted flights (typically $19-$109 one-way). GoWild rates are shown where available.
 
@@ -9,7 +42,7 @@ FRONTIER GOWILD BLACKOUT DATES (flights cannot be booked on these dates):
 August 2026 has NO blackout dates.
 
 IMPORTANT: Always check if tournament travel dates overlap with blackout dates. If there is a conflict, warn the user and suggest nearby non-blackout travel dates or alternative tournaments.
-
+${prefsText}
 Current tournament data available:
 ${JSON.stringify(tournaments.slice(0, 10), null, 2)}
 Saved trips: ${savedTrips.length} trips saved.
@@ -20,15 +53,24 @@ You help users:
 - Compare trip options
 - Plan multi-stop poker trips
 Keep responses concise and actionable. Format numbers as currency. When recommending trips, always mention the total estimated cost breakdown.`;
+
+  const history = chatHistory.slice(-10).map(m => ({ role: m.role, content: m.content }));
+
   try {
+    extractPrefs(userMessage);
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.REACT_APP_ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.REACT_APP_ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 1000,
         system: context,
-        messages: [{ role: 'user', content: userMessage }],
+        messages: history.length > 0 ? history : [{ role: 'user', content: userMessage }],
       }),
     });
     const data = await response.json();
