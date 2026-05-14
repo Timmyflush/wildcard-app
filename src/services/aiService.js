@@ -24,7 +24,7 @@ Keep responses concise and actionable. Format numbers as currency. When recommen
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.REACT_APP_ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 1000,
         system: context,
         messages: [{ role: 'user', content: userMessage }],
