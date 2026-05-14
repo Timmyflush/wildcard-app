@@ -16,7 +16,7 @@ const savePrefs = (newPrefs) => {
   } catch {}
 };
 
-const extractPrefs = async (userMessage) => {
+const extractPrefs = (userMessage) => {
   const lower = userMessage.toLowerCase();
   const prefs = {};
   const budgetMatch = lower.match(/\$?([\d,]+)\s*(total|budget|max|limit)?/);
@@ -42,12 +42,13 @@ FRONTIER GOWILD BLACKOUT DATES (flights cannot be booked on these dates):
 August 2026 has NO blackout dates.
 
 IMPORTANT: Always check if tournament travel dates overlap with blackout dates. If there is a conflict, warn the user and suggest nearby non-blackout travel dates or alternative tournaments.
+
+You have access to web search. Use it to find current poker tournament schedules at specific casinos and poker rooms when the user asks. Search PokerAtlas, Hendon Mob, tournament series websites, and casino websites directly for up to date schedules including smaller local tournaments.
 ${prefsText}
-Current tournament data available:
-${JSON.stringify(tournaments.slice(0, 10), null, 2)}
 Saved trips: ${savedTrips.length} trips saved.
 You help users:
 - Find poker tournaments that match their budget and schedule
+- Search the web for current tournament schedules at any poker room or casino
 - Identify the best GoWild flight opportunities
 - Calculate total trip costs (flight + hotel + buy-in)
 - Compare trip options
@@ -68,8 +69,9 @@ Keep responses concise and actionable. Format numbers as currency. When recommen
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 1000,
+        max_tokens: 2000,
         system: context,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: history.length > 0 ? history : [{ role: 'user', content: userMessage }],
       }),
     });
